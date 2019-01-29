@@ -1,13 +1,15 @@
-package com.teamwanari.appcenter
+package com.ins.gradle.plugin.android.appcenter
 
 import com.google.gson.Gson
-import com.teamwanari.appcenter.entities.*
+import com.ins.gradle.plugin.android.appcenter.entities.*
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.logging.HttpLoggingInterceptor.Level.BASIC
 import okhttp3.logging.HttpLoggingInterceptor.Level.NONE
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 
 open class AppCenterUploadTask : DefaultTask() {
 
@@ -16,9 +18,12 @@ open class AppCenterUploadTask : DefaultTask() {
         description = "Upload artifacts to App Center"
     }
 
-    private val configExtension by lazy {
-        project.extensions.getByType(AppCenterPluginExtension::class.java)
-    }
+
+    @get:Internal  lateinit internal  var extension : FlavorExtension
+
+    @get:Internal internal lateinit var artifact: File
+
+
 
     private val baseUrl by lazy { HttpUrl.get(BASE_URL) }
     private lateinit var okHttpClient: OkHttpClient
@@ -26,7 +31,7 @@ open class AppCenterUploadTask : DefaultTask() {
 
     @TaskAction
     fun appCenterUpload() {
-        val config = checkConfig(configExtension)
+        val config = checkConfig(extension)
         initializeClient(config)
         println("DONE")
         val (uploadId, uploadUrl) = initializeUpload(config)
@@ -39,7 +44,7 @@ open class AppCenterUploadTask : DefaultTask() {
         println("DONE")
     }
 
-    private fun checkConfig(configExtension: AppCenterPluginExtension): AppCenterConfig {
+    private fun checkConfig(configExtension: FlavorExtension): AppCenterConfig {
         stageLogger("Checking configuration...")
         return AppCenterConfig(
                 verbose = configExtension.verbose,
@@ -52,7 +57,7 @@ open class AppCenterUploadTask : DefaultTask() {
                 appOwner = configExtension.appOwner
                     ?: throw IllegalArgumentException(
                             "No user/organization specified as \"appOwner\" in appCenter config."),
-                artifact = configExtension.artifact?.takeIf { it.isFile }
+                artifact = artifact?.takeIf { it.isFile }
                     ?: throw IllegalArgumentException(
                             "No or invalid artifact specified as \"artifact\" in appCenter config."),
                 destination = configExtension.destination

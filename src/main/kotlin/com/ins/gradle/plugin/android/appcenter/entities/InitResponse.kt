@@ -1,4 +1,4 @@
-package com.teamwanari.appcenter.entities
+package com.ins.gradle.plugin.android.appcenter.entities
 
 data class InitResponse(
         val upload_id: String,

@@ -1,4 +1,4 @@
-package com.teamwanari.appcenter
+package com.ins.gradle.plugin.android.appcenter
 
 const val BASE_URL = "https://api.appcenter.ms"
 
