@@ -3,56 +3,130 @@
 [![Kotlin 1.2.71](https://img.shields.io/badge/Kotlin-1.2.71-blue.svg)](http://kotlinlang.org)
 [![Releases](https://img.shields.io/github/release/TeamWanari/appcenter-publish-plugin.svg)](https://github.com/TeamWanari/appcenter-publish-plugin/releases)
 [![Gradle Plugin](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/gradle/plugin/appcenter-publish-plugin/plugin/maven-metadata.xml.svg?label=Gradle%20Plugin&style=flat)](https://plugins.gradle.org/plugin/com.ins.gradle.plugin.android.appcenter-publish-plugin)
-[![JitPack Release](https://jitpack.io/v/TeamWanari/appcenter-publish-plugin.svg)](https://jitpack.io/#TeamWanari/appcenter-publish-plugin)
-[![Travis](https://travis-ci.org/TeamWanari/appcenter-publish-plugin.svg?branch=master)](https://travis-ci.org/TeamWanari/appcenter-publish-plugin/builds)
-[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/TeamWanari/appcenter-publish-plugin/blob/master/LICENSE)
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/jdarosTD/appcenter-publish-plugin/blob/master/LICENSE)
 
-Description
------------
-This is a simple Gradle Plugin which helps you upload your build artifacts to AppCenter.
+# Setup : Add the plugin to your project 
 
-Usage
------
+# Configuration
 
-latest_version = ![Latest version](https://img.shields.io/github/release/TeamWanari/appcenter-publish-plugin.svg)
 
-Build script snippet for plugins DSL for Gradle 2.1 and later:
-```
-plugins {
-  id "com.ins.gradle.plugin.android.appcenter-publish-plugin" version "$latest_version"
-}
+
+
+And the configuration block following the template :
 ```
 
-Build script snippet for use in older Gradle versions or where dynamic configuration is required:
-```
-buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-  dependencies {
-    classpath "gradle.plugin.appcenter-publish-plugin:plugin:$latest_version"
-  }
-}
-
-apply plugin: "com.ins.gradle.plugin.android.appcenter-publish-plugin"
-```
-
-And the configuration block:
-```
 appCenter {
-    apiToken = "****"               // Required. Token generated on your AppCenter account
-    appName = "MyTestApp"           // Required. App name on AppCenter
-    appOwner = "me"                 // Required. User or Organization name who owns the App on AppCenter
-    artifact = file("$projectDir/xyz/xyz.apk") // Required. Path to your release build artifact
-    destination = "QA Testers"      // Required. Name of the Test Group on AppCenter
-    releaseNotes = "Test release notes.... from Gradle Plugin :)" // Optional. Release notes...
-    verbose = true                  // Optional. Enables API call logging. Defaults to false
+
+    defaultConfig {
+        apiToken = "default-api-token"               // Required. Token generated on your AppCenter account
+        appOwner = "your-own-name"                  // Required. User or Organization name who owns the App on AppCenter
+        destination = "user-group-name"             // Required. Name of the Test Group on AppCenter
+        releaseNotes = "your-release-notes"        // Optional. Release notes...
+        verbose = "false"                         // optional. Default is false
+        appNameSuffix = "your-app-name-suffix"      // Optional 
+    }
+    productFlavors {
+        flavor1 {
+            appName = "flavor1-name"           // Custom name for flavor 1 app (optional)
+            destination = "flavor1-user-group-name"     // Custom name for flavor 1 group of users (optional)
+            releaseNotes = "flavor1-release-notes" // Optional. Release notes for flavor1
+            verbose = true
+        }
+
+        flavor2 {
+            appName = "flavor2-name"           // Custom name for flavor 2 app (optional)
+            releaseNotes = "flavor2-release-notes" // Optional. Release notes for flavor2
+             verbose = true
+        }
+        
+        prod {
+            appNameSuffix = "-Prod"
+        }
+        
+         dev {
+            appNameSuffix = "-Dev"
+        }
+
+
+    }
+
 }
 ```
 
-If everything is set, go to terminal and execute **appCenterUpload** gradle task.
+the app Variant configuration will be a merge of custom configuration and default.
+For instance, for flavor2 configuration will be
+
+```
+        apiToken = "default-api-token"               
+        appOwner = "your-own-name"                  
+        destination = "user-group-name"             
+        releaseNotes = "your-release-notes"       
+        verbose = "true"                     
+        appName = "flavor2-name"    
+        releaseNotes = "flavor2-release-notes" 
+
+```
+
+
+This plugin is also compatible with multi-dimensions
+
+for instance you can define in android DSL : 
+
+```
+ flavorDimensions "dimensionA", "dimensionB", "dimensionC"
+
+    productFlavors {
+
+        company        {  dimension 'dimensionA' }
+
+        flavor1 {
+            dimension 'dimensionB'
+            ...
+          
+        }
+        flavor2 {
+            dimension 'dimensionB'
+            ....
+        }
+
+        prod  { dimension 'dimensionC' 
+                ...
+        }
+        dev { dimension 'dimensionC'
+                ...
+        }
+
+    }
+
+```
+
+in this situation, variant app "companyFlavor2DevRelease" configuration will be a merge of each flavors with respect of dimension order in the list: 
+
+```
+        apiToken = "default-api-token"               
+        appOwner = "your-own-name"                  
+        destination = "user-group-name"             
+        releaseNotes = "your-release-notes"       
+        verbose = "true"                     
+        appName = "flavor2-name"    
+        releaseNotes = "flavor2-release-notes" 
+        appNameSuffix = "-Dev"
+
+```
+
+# Usage
+
+The appcenter-publish-plugin will add tasks for each variant following the pattern : 
+
+```
+  upload${variantName}AppCenter
+```
+
+for instance in our last example you will be able to call the task this way: 
+
+```
+  ./gradlew app:uploadCompanyFlavor2DevRelease
+```
 
 License
 -------
