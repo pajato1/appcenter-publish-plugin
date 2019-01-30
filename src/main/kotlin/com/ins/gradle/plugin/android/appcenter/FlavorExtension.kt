@@ -7,6 +7,7 @@ open class FlavorExtension {
     var appOwner: String? = null
     var appName: String? = null
 
+    var appNameSuffix: String = ""
     var destination: String? = null
     var releaseNotes: String? = null
     var verbose: Boolean = false
@@ -19,7 +20,8 @@ open class FlavorExtension {
     constructor(name : String){
         this.name = name
     }
-    constructor(name : String, appName : String?, destination: String?, releaseNotes : String?, appOwner : String?, verbose : Boolean = false){
+    constructor(name : String, appName : String?, destination: String?, releaseNotes : String?, appOwner : String?, appNameSuffix : String  = "", verbose : Boolean = false){
+
 
         this.name = name
         this.appName = appName
@@ -27,7 +29,7 @@ open class FlavorExtension {
         this.releaseNotes = releaseNotes
         this.appOwner = appOwner
         this.verbose = verbose
-
+        this.appNameSuffix =appNameSuffix
 
     }
 
@@ -41,6 +43,19 @@ open class FlavorExtension {
         if(this.releaseNotes == null) this.releaseNotes =  extension2.releaseNotes
 
         return this
+
+    }
+
+
+    override fun toString(): String {
+
+        return "Flavor Extension : { \n" +
+                "apiToken = " + this.apiToken + "\n" +
+                "appOwner = " + this.appOwner + "\n" +
+                "appName  = " + this.appName  + "\n" +
+                "appNameSuffix = " + this.appNameSuffix + "\n" +
+                "destination = " + this.destination + "\n" +
+                "releaseNotes = " + this.releaseNotes + "\n }"
 
     }
 }

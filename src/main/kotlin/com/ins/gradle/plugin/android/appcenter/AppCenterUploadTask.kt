@@ -51,9 +51,10 @@ open class AppCenterUploadTask : DefaultTask() {
                 apiToken = configExtension.apiToken
                     ?: throw IllegalArgumentException(
                             "No API token specified as \"apiToken\" in appCenter config."),
-                appName = configExtension.appName
+                appName = (configExtension.appName
                     ?: throw IllegalArgumentException(
-                            "No App name specified as \"appName\" in appCenter config."),
+                            "No App name specified as \"appName\" in appCenter config.")) + configExtension.appNameSuffix,
+
                 appOwner = configExtension.appOwner
                     ?: throw IllegalArgumentException(
                             "No user/organization specified as \"appOwner\" in appCenter config."),

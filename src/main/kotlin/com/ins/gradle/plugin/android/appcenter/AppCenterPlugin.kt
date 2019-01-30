@@ -1,6 +1,8 @@
 package com.ins.gradle.plugin.android.appcenter
 
 import com.android.build.gradle.AppExtension
+import com.android.build.gradle.internal.dsl.ProductFlavor
+import com.android.build.gradle.internal.tasks.featuresplit.getVariant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -20,27 +22,23 @@ class AppCenterPlugin : Plugin<Project> {
 
     private fun applyInternal(project: Project) {
 
-
         val android = project.extensions.findByName("android") as AppExtension
-
 
         val extension =  project.extensions.create(APP_CENTER_EXTENSION, AppCenterPluginExtension::class.java, project)
 
         extension.productFlavors =  project.container(FlavorExtension::class.java)
 
-
-
         val uploadAllVariant = project.tasks.create("uploadAppCenter") // all apk upload task
-
 
         android.applicationVariants.whenObjectAdded { appVariant ->
             val variantName = appVariant.name.capitalize()
 
+            _log.quiet("Variant {}, signing ready  {}", appVariant.name, appVariant.buildType.signingConfig.isSigningReady)
             if(extension.defaultConfig == null) throw GradleException("Default config is undefined")
 
-            var extensionForTask =   getConfigForVariant(variantName, extension)
-
-
+            val extensionForVariant =   getConfigForVariant(variantName, extension, android)
+            _log.quiet("App Center extension for {}  is : ", variantName)
+            _log.quiet("{}", extensionForVariant.toString())
 
             val uploadVariant = project.tasks.create("upload${variantName}AppCenter", UploadVariant::class.java) { it ->
                 it.variant = appVariant
@@ -52,7 +50,9 @@ class AppCenterPlugin : Plugin<Project> {
                             .create("upload${file.nameWithoutExtension.replace("-", "")}ApkAppCenter",
                                     AppCenterUploadTask::class.java) {
                                 it.artifact = file
-                                it.extension = extensionForTask
+                                it.extension = extensionForVariant
+
+                                _log.quiet("Uploading variant {} with file  {}  ", uploadVariant.name, it.artifact.absolutePath)
                             }
 
                     uploadVariant.dependsOn(apkToCenterTask)
@@ -60,12 +60,16 @@ class AppCenterPlugin : Plugin<Project> {
             }
             else {
 
-                var filteredFiles = uploadVariant.inputApks.filter { file -> file.nameWithoutExtension.contains("universal") }
+                val filteredFiles = uploadVariant.inputApks.filter { file -> file.nameWithoutExtension.contains("universal") }
 
                 if(filteredFiles.isNotEmpty()) {
                     val apkToCenterTask = project.tasks
                             .create("upload${filteredFiles[0].nameWithoutExtension.replace("-", "")}ApkAppCenter", AppCenterUploadTask::class.java) {
                                 it.artifact = filteredFiles[0]
+                                it.extension = extensionForVariant
+
+                                _log.quiet("Uploading variant {} with file  {}  ", uploadVariant.name, it.artifact.absolutePath)
+
                             }
 
                     uploadVariant.dependsOn(apkToCenterTask)
@@ -88,19 +92,48 @@ class AppCenterPlugin : Plugin<Project> {
     }
 
 
-    fun getConfigForVariant(variantName : String, extension : AppCenterPluginExtension, android: AppExtension) : FlavorExtension{
+    /**
+     * Get all flavors associated to variant (one or several dimensions)
+     */
+    fun getFlavors(variantName : String, android: AppExtension) : List<ProductFlavor>{
+        return ArrayList<ProductFlavor>(android.productFlavors.filter { rF ->
+            variantName.toLowerCase().contains(rF.name.toLowerCase())
+        })
+    }
 
-        if(extension.productFlavors?.isEmpty() != false) return extension.defaultConfig!!
+    /**
+     * Get App Center Flavor Extension by name
+     */
+    fun getExtensionByFlavorName(flavorName : String, extension : AppCenterPluginExtension) : FlavorExtension?{
+        return extension.productFlavors?.findByName(flavorName)
+    }
 
 
-        val variantFiltered = extension.productFlavors?.map{ it->
-            if(variantName.toLowerCase().contains(it.name.toLowerCase())) { it } else null
+    /**
+     * Get Flavor Extension for a given variant name
+     */
+    fun getConfigForVariant(variantName : String, appCenterExtension : AppCenterPluginExtension, android: AppExtension) : FlavorExtension{
+
+        if(appCenterExtension.productFlavors?.isEmpty() != false) return appCenterExtension.defaultConfig!!
+
+
+        var resultExtension : FlavorExtension =  appCenterExtension.defaultConfig!!
+        // ordering flavor by dimension
+        val orderBy = android.flavorDimensionList.withIndex().associate {
+            it.value to it.index
         }
-        if(variantFiltered?.isEmpty() != false) return extension.defaultConfig!!
-        val customExtension =  variantFiltered[0]?: extension.defaultConfig
 
-        _log.quiet("Default config :" +extension.defaultConfig)
+        val sortedFlavorsByDim = getFlavors(variantName, android).sortedBy {
+            orderBy[it.dimension]
+        }
+        sortedFlavorsByDim.forEach { flavor ->
 
-        return customExtension!!.mergeWith(extension.defaultConfig!!)
+            val flavorExtension = getExtensionByFlavorName(flavor.name, appCenterExtension )
+            flavorExtension?.let { fe ->
+                resultExtension = fe.mergeWith(resultExtension!!)
+            }
+        }
+        return resultExtension
     }
 }
+
