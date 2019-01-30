@@ -1,9 +1,5 @@
 # appcenter-publish-plugin
 
-[![Kotlin 1.2.71](https://img.shields.io/badge/Kotlin-1.2.71-blue.svg)](http://kotlinlang.org)
-[![Releases](https://img.shields.io/github/release/TeamWanari/appcenter-publish-plugin.svg)](https://github.com/TeamWanari/appcenter-publish-plugin/releases)
-[![Gradle Plugin](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/gradle/plugin/appcenter-publish-plugin/plugin/maven-metadata.xml.svg?label=Gradle%20Plugin&style=flat)](https://plugins.gradle.org/plugin/com.ins.gradle.plugin.android.appcenter-publish-plugin)
-[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/jdarosTD/appcenter-publish-plugin/blob/master/LICENSE)
 
 # Setup : Add the plugin to your project 
 
