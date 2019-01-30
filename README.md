@@ -8,7 +8,30 @@
 # Setup : Add the plugin to your project 
 
 # Configuration
+Build script snippet for plugins DSL for Gradle 2.1 and later:
+```kotlin
 
+plugins {
+  id "com.ins.gradle.plugin.android.appcenter-publish-plugin" version "1.0"
+}
+```
+Build script snippet for use in older Gradle versions or where dynamic configuration is required:
+```kotlin
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "gradle.plugin.com.ins.gradle.plugin.android:appcenter-publish-plugin:1.0"
+  }
+}
+
+apply plugin: "com.ins.gradle.plugin.android.appcenter-publish-plugin"
+
+
+```
 
 
 
