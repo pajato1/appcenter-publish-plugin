@@ -6,7 +6,9 @@ import com.android.build.gradle.internal.tasks.featuresplit.getVariant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.logging.Logging
+import java.io.File
 
 class AppCenterPlugin : Plugin<Project> {
 
@@ -46,15 +48,7 @@ class AppCenterPlugin : Plugin<Project> {
 
             if(uploadVariant.inputApks.size == 1) {
                 uploadVariant.inputApks.forEach { file ->
-                    val apkToCenterTask = project.tasks
-                            .create("upload${file.nameWithoutExtension.replace("-", "")}ApkAppCenter",
-                                    AppCenterUploadTask::class.java) {
-                                it.artifact = file
-                                it.extension = extensionForVariant
-
-                                _log.quiet("Uploading variant {} with file  {}  ", uploadVariant.name, it.artifact.absolutePath)
-                            }
-
+                    val apkToCenterTask =getFileTask(project, file, extensionForVariant, uploadVariant.name)
                     uploadVariant.dependsOn(apkToCenterTask)
                 }
             }
@@ -63,15 +57,7 @@ class AppCenterPlugin : Plugin<Project> {
                 val filteredFiles = uploadVariant.inputApks.filter { file -> file.nameWithoutExtension.contains("universal") }
 
                 if(filteredFiles.isNotEmpty()) {
-                    val apkToCenterTask = project.tasks
-                            .create("upload${filteredFiles[0].nameWithoutExtension.replace("-", "")}ApkAppCenter", AppCenterUploadTask::class.java) {
-                                it.artifact = filteredFiles[0]
-                                it.extension = extensionForVariant
-
-                                _log.quiet("Uploading variant {} with file  {}  ", uploadVariant.name, it.artifact.absolutePath)
-
-                            }
-
+                    val apkToCenterTask =getFileTask(project, filteredFiles[0], extensionForVariant, uploadVariant.name)
                     uploadVariant.dependsOn(apkToCenterTask)
                 }
             }
@@ -91,6 +77,18 @@ class AppCenterPlugin : Plugin<Project> {
         }
     }
 
+
+    fun getFileTask(project : Project, file : File, extension: FlavorExtension, variantName : String) : Task {
+        return project.tasks
+                .create("upload${file.nameWithoutExtension.replace("-", "")}ApkAppCenter",
+                        AppCenterUploadTask::class.java) {
+                    it.artifact = file
+                    it.extension = extension
+
+                    _log.quiet("Uploading variant {} with file  {}  ", variantName, it.artifact.absolutePath)
+                }
+
+    }
 
     /**
      * Get all flavors associated to variant (one or several dimensions)
