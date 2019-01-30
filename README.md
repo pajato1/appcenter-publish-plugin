@@ -125,7 +125,7 @@ The appcenter-publish-plugin will add tasks for each variant following the patte
 for instance in our last example you will be able to call the task this way: 
 
 ```
-  ./gradlew app:uploadCompanyFlavor2DevRelease
+  ./gradlew app:uploadCompanyFlavor2DevReleaseAppCenter
 ```
 
 # Nota Bene
