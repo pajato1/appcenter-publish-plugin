@@ -128,12 +128,21 @@ for instance in our last example you will be able to call the task this way:
   ./gradlew app:uploadCompanyFlavor2DevRelease
 ```
 
+# Nota Bene
+
+Be aware that the appcenter-publish-plugin is aware in split configuration in the way that, if used, only the "universal" apk assembled will be uploaded
+
+# For future version
+
+Will be nice to avoid creation of tasks in the case of unsigned version, they are not allowed in the AppCenter
+
 License
 -------
 ```
 MIT License
 
 Copyright (c) 2018 TeamWanari
+Copyright (c) 2019 jdarosTD
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
