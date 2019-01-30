@@ -1,5 +1,6 @@
 package com.ins.gradle.plugin.android.appcenter
 
+import org.gradle.api.logging.Logging
 import java.io.File
 
 open class FlavorExtension {
@@ -12,6 +13,9 @@ open class FlavorExtension {
     var releaseNotes: String? = null
     var verbose: Boolean = false
 
+
+    val _log = Logging.getLogger(FlavorExtension::class.java.simpleName)
+
      lateinit var name: String
 
     constructor(){}
@@ -20,7 +24,7 @@ open class FlavorExtension {
     constructor(name : String){
         this.name = name
     }
-    constructor(name : String, appName : String?, destination: String?, releaseNotes : String?, appOwner : String?, appNameSuffix : String  = "", verbose : Boolean = false){
+    constructor(name : String, appName : String? = null, destination: String?= null, releaseNotes : String?, appOwner : String?, appNameSuffix : String  = "", verbose : Boolean = false){
 
 
         this.name = name
@@ -36,13 +40,20 @@ open class FlavorExtension {
 
     fun mergeWith(extension2 : FlavorExtension) : FlavorExtension{
 
-        if(this.apiToken == null) this.apiToken= extension2.apiToken
-        if(this.appOwner == null) this.appOwner= extension2.appOwner
-        if(this.appName == null) this.appName = extension2.appName
-        if(this.destination == null) this.destination =extension2.destination
-        if(this.releaseNotes == null) this.releaseNotes =  extension2.releaseNotes
+        var extension = FlavorExtension()
+        extension.apiToken     =   if(this.apiToken == null)        extension2.apiToken           else this.apiToken
+        extension.appOwner       = if(this.appOwner == null)        extension2.appOwner           else this.appOwner
+        extension.appName        = if(this.appName == null)         extension2.appName            else this.appName
+        extension.destination    = if(this.destination == null)     extension2.destination        else this.destination
+        extension.releaseNotes   = if(this.releaseNotes == null)    extension2.releaseNotes       else this.releaseNotes
+        extension.appNameSuffix  = if(this.appNameSuffix.isBlank()) extension2.appNameSuffix      else this.appNameSuffix
 
-        return this
+        var myName = if(::name.isInitialized) this.name else "default"
+        var hisName = if(extension2::name.isInitialized) extension2.name else "default"
+
+        _log.info("mergeWith() ReleaseNotes flavor {} : {},  {} : {}", myName, this.releaseNotes,hisName, extension2.releaseNotes)
+
+        return extension
 
     }
 
