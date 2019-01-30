@@ -13,7 +13,7 @@
 
 
 And the configuration block following the template :
-```
+```kotlin
 
 appCenter {
 
@@ -72,7 +72,7 @@ This plugin is also compatible with multi-dimensions
 
 for instance you can define in android DSL : 
 
-```
+```kotlin
  flavorDimensions "dimensionA", "dimensionB", "dimensionC"
 
     productFlavors {
