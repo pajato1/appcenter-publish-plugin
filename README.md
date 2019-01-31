@@ -155,6 +155,12 @@ Be aware that the appcenter-publish-plugin is aware in split configuration in th
 
 Will be nice to avoid creation of tasks in the case of unsigned version, they are not allowed in the AppCenter
 
+
+# Acknowledgments 
+
+This plugin is a fork project from TeamWanari https://github.com/TeamWanari
+Many thanks !
+
 License
 -------
 ```
