@@ -1,6 +1,7 @@
 package com.ins.gradle.plugin.android.appcenter
 
 import com.android.build.gradle.AppExtension
+import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.tasks.featuresplit.getVariant
 import org.gradle.api.GradleException
@@ -26,9 +27,10 @@ class AppCenterPlugin : Plugin<Project> {
 
         val android = project.extensions.findByName("android") as AppExtension
 
-        val extension =  project.extensions.create(APP_CENTER_EXTENSION, AppCenterPluginExtension::class.java, project)
+        val extension = project.extensions.create(APP_CENTER_EXTENSION, AppCenterPluginExtension::class.java, project)
 
-        extension.productFlavors =  project.container(FlavorExtension::class.java)
+        extension.productFlavors = project.container(BuildVariantExtension::class.java)
+        extension.buildTypes = project.container(BuildVariantExtension::class.java)
 
         val uploadAllVariant = project.tasks.create("uploadAppCenter") // all apk upload task
 
@@ -77,8 +79,7 @@ class AppCenterPlugin : Plugin<Project> {
         }
     }
 
-
-    fun getFileTask(project : Project, file : File, extension: FlavorExtension, variantName : String) : Task {
+    fun getFileTask(project : Project, file : File, extension: BuildVariantExtension, variantName : String) : Task {
         return project.tasks
                 .create("upload${file.nameWithoutExtension.replace("-", "")}ApkAppCenter",
                         AppCenterUploadTask::class.java) {
@@ -94,44 +95,68 @@ class AppCenterPlugin : Plugin<Project> {
      * Get all flavors associated to variant (one or several dimensions)
      */
     fun getFlavors(variantName : String, android: AppExtension) : List<ProductFlavor>{
-        return ArrayList<ProductFlavor>(android.productFlavors.filter { rF ->
-            variantName.toLowerCase().contains(rF.name.toLowerCase())
+        return ArrayList<ProductFlavor>(android.productFlavors.filter { productFlavor ->
+            variantName.toLowerCase().contains(productFlavor.name.toLowerCase())
         })
     }
 
     /**
-     * Get App Center Flavor Extension by name
+     * Get all build types
      */
-    fun getExtensionByFlavorName(flavorName : String, extension : AppCenterPluginExtension) : FlavorExtension?{
+    fun getBuildTypes(buildTypeName : String, android: AppExtension) : List<BuildType>{
+        return ArrayList<BuildType>(android.buildTypes.filter { buildType ->
+            buildTypeName.toLowerCase().contains(buildType.name.toLowerCase())
+        })
+    }
+
+    /**
+     * Get App Center Build Type Extension by name
+     */
+    fun getExtensionByBuildTypeName(buildVariantName : String, extension : AppCenterPluginExtension) : BuildVariantExtension?{
+        return extension.buildTypes?.findByName(buildVariantName)
+    }
+
+    /**
+     * Get App Center Product Flavor Extension by name
+     */
+    fun getExtensionByFlavorName(flavorName : String, extension : AppCenterPluginExtension) : BuildVariantExtension?{
         return extension.productFlavors?.findByName(flavorName)
     }
 
-
     /**
-     * Get Flavor Extension for a given variant name
+     * Get ApplicationVariant Extension for a given variant name
      */
-    fun getConfigForVariant(variantName : String, appCenterExtension : AppCenterPluginExtension, android: AppExtension) : FlavorExtension{
+    fun getConfigForVariant(variantName : String, appCenterExtension : AppCenterPluginExtension, android: AppExtension) : BuildVariantExtension{
 
-        if(appCenterExtension.productFlavors?.isEmpty() != false) return appCenterExtension.defaultConfig!!
+        var resultExtension : BuildVariantExtension = appCenterExtension.defaultConfig!!
 
+        if(appCenterExtension.productFlavors?.isEmpty() == false) {
+            // ordering flavor by dimension
+            val orderBy = android.flavorDimensionList.withIndex().associate {
+                it.value to it.index
+            }
 
-        var resultExtension : FlavorExtension =  appCenterExtension.defaultConfig!!
-        // ordering flavor by dimension
-        val orderBy = android.flavorDimensionList.withIndex().associate {
-            it.value to it.index
-        }
+            val sortedFlavorsByDim = getFlavors(variantName, android).sortedBy {
+                orderBy[it.dimension]
+            }
 
-        val sortedFlavorsByDim = getFlavors(variantName, android).sortedBy {
-            orderBy[it.dimension]
-        }
-        sortedFlavorsByDim.forEach { flavor ->
-
-            val flavorExtension = getExtensionByFlavorName(flavor.name, appCenterExtension )
-            flavorExtension?.let { fe ->
-                resultExtension = fe.mergeWith(resultExtension!!)
+            sortedFlavorsByDim.forEach { flavor ->
+                val flavorExtension = getExtensionByFlavorName(flavor.name, appCenterExtension )
+                flavorExtension?.let { fe ->
+                    resultExtension = fe.mergeWith(resultExtension)
+                }
             }
         }
+
+        if(appCenterExtension.buildTypes?.isEmpty() == false) {
+            getBuildTypes(variantName, android).forEach { buildType ->
+                val buildTypeExtension = getExtensionByBuildTypeName(buildType.name, appCenterExtension)
+                buildTypeExtension?.let { bte ->
+                    resultExtension = bte.mergeWith(resultExtension)
+                }
+            }
+        }
+
         return resultExtension
     }
 }
-

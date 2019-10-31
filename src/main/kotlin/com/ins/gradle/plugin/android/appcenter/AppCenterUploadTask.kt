@@ -19,7 +19,7 @@ open class AppCenterUploadTask : DefaultTask() {
     }
 
 
-    @get:Internal  lateinit internal  var extension : FlavorExtension
+    @get:Internal  lateinit internal  var extension : BuildVariantExtension
 
     @get:Internal internal lateinit var artifact: File
 
@@ -44,7 +44,7 @@ open class AppCenterUploadTask : DefaultTask() {
         println("DONE")
     }
 
-    private fun checkConfig(configExtension: FlavorExtension): AppCenterConfig {
+    private fun checkConfig(configExtension: BuildVariantExtension): AppCenterConfig {
         stageLogger("Checking configuration...")
         return AppCenterConfig(
                 verbose = configExtension.verbose,
@@ -176,9 +176,11 @@ open class AppCenterUploadTask : DefaultTask() {
                                 release_notes = config.releaseNotes))))
                 .build()
 
+                            System.err.println(request.toString())
         val response = okHttpClient.newCall(request).execute()
 
         if (!response.isSuccessful) {
+            System.err.println(response.toString())
             throw IllegalStateException(response.message())
         } else {
             response.close()

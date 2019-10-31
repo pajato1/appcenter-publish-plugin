@@ -9,18 +9,19 @@ const val APP_CENTER_EXTENSION = "appCenter"
 
 open class AppCenterPluginExtension(private val project: Project) {
 
-    var productFlavors : NamedDomainObjectContainer<FlavorExtension> ?= null
+    var productFlavors : NamedDomainObjectContainer<BuildVariantExtension> ?= null
+    var buildTypes : NamedDomainObjectContainer<BuildVariantExtension> ?= null
 
-    var defaultConfig : FlavorExtension ?= null
+    var defaultConfig : BuildVariantExtension ?= null
 
     /**
-     * Default Configuration when not defined for a flavor
+     * Default Configuration when not defined for a buildType or flavor
      */
-    fun defaultConfig(defaultDef: Closure<*>) : FlavorExtension?{
+    fun defaultConfig(defaultDef: Closure<*>) : BuildVariantExtension?{
         if (defaultConfig != null) {
             throw Exception("Only one default config allowed")
         }
-        defaultConfig = FlavorExtension()
+        defaultConfig = BuildVariantExtension()
         project.configure(defaultConfig, defaultDef)
         defaultDef.delegate = defaultConfig
 
@@ -28,10 +29,16 @@ open class AppCenterPluginExtension(private val project: Project) {
     }
 
     /**
-     * All flavor config can be defined here
+     * All buildType config can be defined here
      */
-    fun productFlavors(action: Action<in NamedDomainObjectContainer<FlavorExtension>>) {
-        action.execute(productFlavors)
+    fun buildTypes(action: Action<in NamedDomainObjectContainer<BuildVariantExtension>>) {
+        action.execute(buildTypes)
     }
 
+    /**
+     * All flavor config can be defined here
+     */
+    fun productFlavors(action: Action<in NamedDomainObjectContainer<BuildVariantExtension>>) {
+        action.execute(productFlavors)
+    }
 }

@@ -3,7 +3,7 @@ package com.ins.gradle.plugin.android.appcenter
 import org.gradle.api.logging.Logging
 import java.io.File
 
-open class FlavorExtension {
+open class BuildVariantExtension {
     var apiToken: String? = null
     var appOwner: String? = null
     var appName: String? = null
@@ -14,7 +14,7 @@ open class FlavorExtension {
     var verbose: Boolean = false
 
 
-    val _log = Logging.getLogger(FlavorExtension::class.java.simpleName)
+    val _log = Logging.getLogger(BuildVariantExtension::class.java.simpleName)
 
      lateinit var name: String
 
@@ -38,9 +38,9 @@ open class FlavorExtension {
     }
 
 
-    fun mergeWith(extension2 : FlavorExtension) : FlavorExtension{
+    fun mergeWith(extension2 : BuildVariantExtension) : BuildVariantExtension{
 
-        var extension = FlavorExtension()
+        var extension = BuildVariantExtension()
         extension.apiToken     =   if(this.apiToken == null)        extension2.apiToken           else this.apiToken
         extension.appOwner       = if(this.appOwner == null)        extension2.appOwner           else this.appOwner
         extension.appName        = if(this.appName == null)         extension2.appName            else this.appName
@@ -51,7 +51,7 @@ open class FlavorExtension {
         var myName = if(::name.isInitialized) this.name else "default"
         var hisName = if(extension2::name.isInitialized) extension2.name else "default"
 
-        _log.info("mergeWith() ReleaseNotes flavor {} : {},  {} : {}", myName, this.releaseNotes,hisName, extension2.releaseNotes)
+        _log.info("mergeWith() ReleaseNotes buildVariant {} : {},  {} : {}", myName, this.releaseNotes,hisName, extension2.releaseNotes)
 
         return extension
 
@@ -60,7 +60,7 @@ open class FlavorExtension {
 
     override fun toString(): String {
 
-        return "Flavor Extension : { \n" +
+        return "BuildVariant Extension : { \n" +
                 "apiToken = " + this.apiToken + "\n" +
                 "appOwner = " + this.appOwner + "\n" +
                 "appName  = " + this.appName  + "\n" +
