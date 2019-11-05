@@ -105,7 +105,7 @@ class AppCenterPlugin : Plugin<Project> {
      */
     fun getBuildTypes(buildTypeName : String, android: AppExtension) : List<BuildType>{
         return ArrayList<BuildType>(android.buildTypes.filter { buildType ->
-            buildTypeName.toLowerCase().contains(buildType.name.toLowerCase())
+            buildType.name.toLowerCase().contains(buildTypeName.toLowerCase())
         })
     }
 
