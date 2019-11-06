@@ -101,11 +101,11 @@ class AppCenterPlugin : Plugin<Project> {
     }
 
     /**
-     * Get all build types
+     * Get all build types associated to variant
      */
-    fun getBuildTypes(buildTypeName : String, android: AppExtension) : List<BuildType>{
+    fun getBuildTypes(variantName : String, android: AppExtension) : List<BuildType>{
         return ArrayList<BuildType>(android.buildTypes.filter { buildType ->
-            buildType.name.toLowerCase().contains(buildTypeName.toLowerCase())
+            variantName.endsWith(buildType.name.capitalize())
         })
     }
 
