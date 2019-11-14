@@ -64,7 +64,9 @@ open class AppCenterUploadTask : DefaultTask() {
                 destination = configExtension.destination
                     ?: throw IllegalArgumentException(
                             "No destination(Group) specified as \"destination\" in appCenter config."),
-                releaseNotes = configExtension.releaseNotes ?: ""
+                releaseNotes = configExtension.releaseNotes ?: "",
+                mandatoryUpdate = configExtension.mandatoryUpdate,
+                notifyTesters = configExtension.notifyTesters
         )
     }
 
@@ -173,7 +175,9 @@ open class AppCenterUploadTask : DefaultTask() {
                         MediaType.parse(MEDIA_TYPE_JSON),
                         Gson().toJson(DistributionRequest(
                                 destination_name = config.destination,
-                                release_notes = config.releaseNotes))))
+                                release_notes = config.releaseNotes,
+                                mandatory_update = config.mandatoryUpdate,
+                                notify_testers = config.notifyTesters))))
                 .build()
 
                             System.err.println(request.toString())

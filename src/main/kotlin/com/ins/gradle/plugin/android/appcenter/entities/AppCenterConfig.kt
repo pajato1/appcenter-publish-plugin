@@ -9,5 +9,7 @@ data class AppCenterConfig(
         val artifact: File,
         val destination: String,
         val releaseNotes: String,
-        val verbose: Boolean
+        val verbose: Boolean,
+        val mandatoryUpdate: Boolean,
+        val notifyTesters: Boolean
 )
